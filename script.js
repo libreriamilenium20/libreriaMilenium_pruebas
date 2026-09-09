@@ -39,7 +39,7 @@
       iniciarCarruselAuto();
     });
 
-    // 1. SINCRONIZACIÓN EN TIEMPO REAL
+    // 1. SINCRONIZACIÓN EN TIEMPO REAL (Solo lectura y configuración visual)
     function escucharBaseDeDatos() {
       booksRef.on('value', (snapshot) => {
         const data = snapshot.val();
@@ -52,8 +52,6 @@
         actualizarCategoriasDinamicas();
         renderizarCatalogo();
         renderizarCarrusel();
-        actualizarEstadisticasAdmin();
-        renderizarTablaAdmin();
       });
     }
 
@@ -63,44 +61,35 @@
         
         if (configGlobal.logoLeft) {
           document.getElementById('main-logo-left').src = configGlobal.logoLeft;
-          document.getElementById('config-logo-left').value = configGlobal.logoLeft;
         }
         if (configGlobal.logoRight) {
           document.getElementById('main-logo-right').src = configGlobal.logoRight;
-          document.getElementById('config-logo-right').value = configGlobal.logoRight;
         }
 
         if (configGlobal.colorPrimary) {
           document.documentElement.style.setProperty('--color-primario', configGlobal.colorPrimary);
-          document.getElementById('config-color-primario').value = configGlobal.colorPrimary;
         }
         if (configGlobal.colorSecondary) {
           document.documentElement.style.setProperty('--color-secundario', configGlobal.colorSecondary);
-          document.getElementById('config-color-secundario').value = configGlobal.colorSecondary;
         }
         if (configGlobal.colorAccent) {
           document.documentElement.style.setProperty('--color-acento', configGlobal.colorAccent);
-          document.getElementById('config-color-acento').value = configGlobal.colorAccent;
         }
 
         if (configGlobal.direccion) {
           document.getElementById('store-address-text').textContent = configGlobal.direccion;
           document.getElementById('footer-direccion-txt').innerText = configGlobal.direccion;
-          document.getElementById('config-direccion').value = configGlobal.direccion;
         }
         if (configGlobal.iframeMap) {
           document.getElementById('store-iframe').src = configGlobal.iframeMap;
-          document.getElementById('config-iframe').value = configGlobal.iframeMap;
         }
         if (configGlobal.horarios) {
           document.getElementById('top-bar-horarios').innerHTML = `<i class="fa-regular fa-clock"></i> ${configGlobal.horarios}`;
-          document.getElementById('config-horarios').value = configGlobal.horarios;
         }
         if (configGlobal.whatsapp) {
           document.getElementById('hero-btn-wa').href = configGlobal.whatsapp;
           document.getElementById('btn-pedir-wa').href = `${configGlobal.whatsapp}?text=Hola,%20busco%20un%20libro%20sobre%20pedido`;
           document.getElementById('footer-wa').href = configGlobal.whatsapp;
-          document.getElementById('config-whatsapp').value = configGlobal.whatsapp;
         }
       });
     }
@@ -139,13 +128,11 @@
       if (orden === 'price-desc') filtradosGlobal.sort((a,b) => parseFloat(b.precio) - parseFloat(a.precio));
       if (orden === 'alpha') filtradosGlobal.sort((a,b) => (a.titulo || '').localeCompare(b.titulo || ''));
 
-      // Reiniciar contador y limpiar contenedor para cargar el primer lote
       displayedCount = 0;
       document.getElementById('book-list').innerHTML = '';
       loadMoreProducts();
     }
 
-    // Función que carga el siguiente lote de productos al hacer clic en "Ver más"
     function loadMoreProducts() {
       const container = document.getElementById('book-list');
       const loadMoreBtn = document.getElementById('load-more-btn');
@@ -189,7 +176,6 @@
 
       displayedCount += nextBatch.length;
 
-      // Mostrar u ocultar el botón "Ver más" si ya no quedan más libros por mostrar
       if (displayedCount >= filtradosGlobal.length) {
         loadMoreBtn.classList.add('hidden');
       } else {
@@ -353,149 +339,6 @@
       if (forzar || e.target.id === 'quickview-modal') {
         document.getElementById('quickview-modal').style.display = 'none';
       }
-    }
-
-    // 7. ADMINISTRACIÓN Y CONTROL DE INVENTARIO
-    function solicitarAccesoAdmin() {
-      const pass = prompt("Ingrese la clave de administración:");
-      if (pass === "milenium2026") {
-        document.getElementById('admin-overlay').style.display = 'block';
-        document.getElementById('admin-panel').style.display = 'block';
-      } else if (pass !== null) {
-        mostrarToast("Contraseña incorrecta");
-      }
-    }
-
-    function cerrarAdminPanel() {
-      document.getElementById('admin-overlay').style.display = 'none';
-      document.getElementById('admin-panel').style.display = 'none';
-    }
-
-    function guardarEstilosYLogos(e) {
-      e.preventDefault();
-      const nuevosEstilos = {
-        logoLeft: document.getElementById('config-logo-left').value.trim(),
-        logoRight: document.getElementById('config-logo-right').value.trim(),
-        colorPrimary: document.getElementById('config-color-primario').value,
-        colorSecondary: document.getElementById('config-color-secundario').value,
-        colorAccent: document.getElementById('config-color-acento').value
-      };
-
-      configRef.update(nuevosEstilos).then(() => {
-        mostrarToast("Estilos visuales actualizados");
-      }).catch(err => mostrarToast("Error al guardar: " + err.message));
-    }
-
-    function guardarConfiguracionSitio(e) {
-      e.preventDefault();
-      const configData = {
-        direccion: document.getElementById('config-direccion').value.trim(),
-        iframeMap: document.getElementById('config-iframe').value.trim(),
-        horarios: document.getElementById('config-horarios').value.trim(),
-        whatsapp: document.getElementById('config-whatsapp').value.trim(),
-        facebook: document.getElementById('config-facebook').value.trim(),
-        instagram: document.getElementById('config-instagram').value.trim()
-      };
-
-      configRef.update(configData).then(() => {
-        mostrarToast("Ajustes guardados correctamente");
-      }).catch(err => mostrarToast("Error al guardar: " + err.message));
-    }
-
-    function actualizarEstadisticasAdmin() {
-      const total = librosGlobal.length;
-      const disponibles = librosGlobal.filter(l => l.estado === 'Disponible').length;
-      const sumaValor = librosGlobal.reduce((acc, l) => acc + parseFloat(l.precio || 0), 0);
-
-      document.getElementById('stat-total-books').textContent = total;
-      document.getElementById('stat-available-books').textContent = disponibles;
-      document.getElementById('stat-total-value').textContent = `$${sumaValor.toFixed(2)}`;
-    }
-
-    function guardarLibro(e) {
-      e.preventDefault();
-      const id = document.getElementById('edit-book-id').value;
-      const libroData = {
-        titulo: document.getElementById('input-title').value.trim(),
-        autor: document.getElementById('input-author').value.trim(),
-        precio: parseFloat(document.getElementById('input-price').value),
-        categoria: document.getElementById('input-category').value.trim(),
-        estado: document.getElementById('input-status').value,
-        imagen: document.getElementById('input-image').value.trim(),
-        resumen: document.getElementById('input-resume').value.trim()
-      };
-
-      if (id) {
-        booksRef.child(id).update(libroData).then(() => {
-          mostrarToast("Libro actualizado");
-          resetFormulario();
-        });
-      } else {
-        booksRef.push(libroData).then(() => {
-          mostrarToast("Libro registrado en inventario");
-          resetFormulario();
-        });
-      }
-    }
-
-    function renderizarTablaAdmin(filtro = '') {
-      const tbody = document.getElementById('admin-table-body');
-      tbody.innerHTML = '';
-      
-      const filtrados = librosGlobal.filter(l => 
-        l.titulo.toLowerCase().includes(filtro.toLowerCase()) || 
-        l.autor.toLowerCase().includes(filtro.toLowerCase()) ||
-        (l.categoria && l.categoria.toLowerCase().includes(filtro.toLowerCase()))
-      );
-
-      filtrados.forEach(libro => {
-        tbody.innerHTML += `
-          <tr>
-            <td><img src="${libro.imagen}" class="tbl-thumb" loading="lazy"></td>
-            <td><strong>${libro.titulo}</strong><br><small>${libro.autor}</small></td>
-            <td><span class="book-category">${libro.categoria || 'General'}</span></td>
-            <td>$${parseFloat(libro.precio).toFixed(2)}</td>
-            <td><span style="color:${libro.estado==='Disponible'?'#10b981':'#ef4444'}; font-weight:600;">${libro.estado}</span></td>
-            <td class="action-btns">
-              <button class="edit-btn" onclick="cargarEdicion('${libro.id}')"><i class="fa-solid fa-pen"></i> Editar</button>
-              <button class="delete-btn" onclick="eliminarLibro('${libro.id}')"><i class="fa-solid fa-trash"></i> Borrar</button>
-            </td>
-          </tr>
-        `;
-      });
-    }
-
-    function filtrarTablaAdmin() {
-      const val = document.getElementById('admin-search-tbl').value;
-      renderizarTablaAdmin(val);
-    }
-
-    function cargarEdicion(id) {
-      const libro = librosGlobal.find(l => l.id === id);
-      if (!libro) return;
-      document.getElementById('edit-book-id').value = id;
-      document.getElementById('input-title').value = libro.titulo;
-      document.getElementById('input-author').value = libro.autor;
-      document.getElementById('input-price').value = libro.precio;
-      document.getElementById('input-category').value = libro.categoria;
-      document.getElementById('input-status').value = libro.estado;
-      document.getElementById('input-image').value = libro.imagen;
-      document.getElementById('input-resume').value = libro.resumen;
-      document.getElementById('admin-form-title').textContent = "Editar Libro Seleccionado";
-      
-      document.getElementById('admin-panel').scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function eliminarLibro(id) {
-      if (confirm("¿Deseas eliminar este ejemplar del catálogo?")) {
-        booksRef.child(id).remove().then(() => mostrarToast("Libro eliminado"));
-      }
-    }
-
-    function resetFormulario() {
-      document.getElementById('book-form').reset();
-      document.getElementById('edit-book-id').value = '';
-      document.getElementById('admin-form-title').textContent = "Agregar Nuevo Libro";
     }
 
     // UTILERÍAS Y EFECTOS
