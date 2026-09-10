@@ -101,11 +101,11 @@ header {
 .section-title { font-family: 'Playfair Display', serif; text-align: center; margin: 2.5rem 0 1.8rem; color: var(--color-primario); font-size: 2.2rem; }
 .section-title::after { content: ''; display: block; width: 50px; height: 3px; background: var(--color-secundario); margin: 0.8rem auto 0; }
 
-/* CARRUSEL DE LIBROS */
+/* CARRUSEL DE LIBROS (CORREGIDO PARA MÓVILES) */
 .carousel-container { width: 100%; position: relative; margin: 1rem 0 3rem; padding: 0 3rem; }
-.carousel-wrapper { overflow: hidden; width: 100%; border-radius: 16px; padding: 1rem 0; background: var(--card-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-.carousel { display: flex; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
-.carousel-item { min-width: 200px; max-width: 200px; margin: 0 1.2rem; text-align: center; flex-shrink: 0; cursor: pointer; }
+.carousel-wrapper { overflow: hidden; width: 100%; border-radius: 16px; padding: 1rem 0; background: var(--card-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); transform: translateZ(0); }
+.carousel { display: flex; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; }
+.carousel-item { flex: 0 0 200px; min-width: 200px; max-width: 200px; margin: 0 1.2rem; text-align: center; cursor: pointer; }
 .carousel-item-img-box { width: 100%; height: 260px; display: flex; align-items: center; justify-content: center; background: transparent; border-radius: 12px; overflow: hidden; padding: 6px; transition: transform 0.3s; }
 .carousel-item-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12)); }
 .carousel-item:hover .carousel-item-img-box { transform: translateY(-8px); }
