@@ -38,12 +38,14 @@ let comentariosGlobal = [];
 let configGlobal = {};
 let categoriaActiva = 'Todas';
 let filtroNovedadesActivo = false;
+let carruselInterval = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   cargarFondoAnimado();
   escucharBaseDeDatos();
   escucharConfiguracion();
   escucharComentarios();
+  iniciarCarruselAuto();
 });
 
 // 1. SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE
@@ -381,13 +383,50 @@ function renderizarCarrusel() {
     `;
     carrusel.appendChild(item);
   });
+
+  // Pausar auto-movimiento cuando el usuario toca o pasa el cursor sobre el carrusel
+  carrusel.onmouseenter = pausarCarrusel;
+  carrusel.onmouseleave = reanudarCarrusel;
+  carrusel.ontouchstart = pausarCarrusel;
+  carrusel.ontouchend = reanudarCarrusel;
 }
 
 function scrollTrendingCarousel(direction) {
   const carrusel = document.getElementById('new-books-carousel');
-  if (carrusel) {
-    carrusel.scrollBy({ left: direction * 220, behavior: 'smooth' });
+  if (!carrusel) return;
+
+  const step = 160; // Avance de tarjeta hacia la izquierda (direction = 1 avanza el scroll)
+  const maxScrollLeft = carrusel.scrollWidth - carrusel.clientWidth;
+
+  if (direction > 0) {
+    // Si ya llegó al final de los libros de novedad, regresa al principio
+    if (carrusel.scrollLeft >= maxScrollLeft - 10) {
+      carrusel.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+      carrusel.scrollBy({ left: step, behavior: 'smooth' });
+    }
+  } else {
+    if (carrusel.scrollLeft <= 10) {
+      carrusel.scrollTo({ left: maxScrollLeft, behavior: 'smooth' });
+    } else {
+      carrusel.scrollBy({ left: -step, behavior: 'smooth' });
+    }
   }
+}
+
+function iniciarCarruselAuto() {
+  if (carruselInterval) clearInterval(carruselInterval);
+  carruselInterval = setInterval(() => {
+    scrollTrendingCarousel(1);
+  }, 4000);
+}
+
+function pausarCarrusel() {
+  if (carruselInterval) clearInterval(carruselInterval);
+}
+
+function reanudarCarrusel() {
+  iniciarCarruselAuto();
 }
 
 // 5. RESEÑAS Y COMENTARIOS CON FIREBASE
